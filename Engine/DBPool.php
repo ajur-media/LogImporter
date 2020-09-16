@@ -11,6 +11,8 @@
 namespace AJUR\LogEstimator;
 
 use Arris\DB;
+use Exception;
+use PDO;
 use function Arris\DBC as DBCAlias;
 
 /**
@@ -18,28 +20,36 @@ use function Arris\DBC as DBCAlias;
  * 
  */
 class DBPool {
+    /**
+     * @var PDO
+     */
+    protected $pdo;
     private $pool_max_size = 0;
     private $pool = [];
 
     private $db_table = '';
     private $db_columns = [];
-
+    
     /**
      * DBPool constructor.
+     * @param PDO $pdo
      * @param int $pool_max_size
      * @param string $db_table
      * @param array $db_columns
      */
-    public function __construct(int $pool_max_size, string $db_table, array $db_columns)
+    public function __construct(PDO $pdo, int $pool_max_size, string $db_table, array $db_columns)
     {
+        $this->pdo = $pdo;
+        
         $this->pool_max_size = $pool_max_size;
+        
         $this->db_table = $db_table;
         $this->db_columns = $db_columns;
     }
 
     /**
      * @param array $dataset
-     * @throws \Exception
+     * @throws Exception
      */
     public function push(array $dataset)
     {
@@ -50,21 +60,21 @@ class DBPool {
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
      */
     public function commit()
     {
-        self::PDO_InsertRange($this->db_table, $this->pool, $this->db_columns);
+        self::PDO_InsertRange($this->pdo, $this->db_table, $this->pool, $this->db_columns);
         $this->pool = [];
     }
-
+    
     /**
+     * @param PDO $pdo
      * @param string $tableName
      * @param array $rows
      * @param array $db_columns
-     * @throws \Exception
      */
-    private static function PDO_InsertRange(string $tableName, array $rows, array $db_columns)
+    private static function PDO_InsertRange(PDO $pdo, string $tableName, array $rows, array $db_columns)
     {
         if (empty($rows)) return;
 
@@ -85,7 +95,7 @@ class DBPool {
 
         // Construct the query
         $sql = "INSERT INTO {$tableName} ({$columnListString}) VALUES {$placeHolders}";
-        $stmt = DBCAlias()->prepare($sql);
+        $stmt = $pdo->prepare($sql);
 
         $j = 1;
         foreach($rows as $row)

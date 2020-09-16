@@ -3,6 +3,14 @@
         "ext-json": "*",
         "spatie/regex": "^1.4",
         "karelwintersky/arris": "^1.22",
-        "karelwintersky/composer-cleanup-plugin": "^1.1"
+        "karelwintersky/composer-cleanup-plugin": "^1.1",
+        "ext-pdo": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "AJUR\\LogEstimator\\": "Engine",
+            "AJUR\\LogEstimator\\Rules\\": "Engine/Rules"
+        }
     }
+
 }
